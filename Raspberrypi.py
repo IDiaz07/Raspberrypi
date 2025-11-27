@@ -3,70 +3,104 @@ import time
 import random
 
 GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
-# Pines de botones (solo 4)
-btn1 = 26
-btn2 = 25
-btn3 = 23
-btn4 = 24
+# ===== BOTONES =====
+botones = {
+    "BTN1": 25,
+    "BTN2": 27,
+    "BTN3": 17,
+    "BTN4": 24
+}
 
-botones = [btn1, btn2, btn3, btn4]
+# ===== GND =====
+gnd_pines = [23, 22, 16, 26]
 
-# Pines para LED y buzzer
-led = 5
-buzzer = 6
+# ===== LEDS =====
+leds = {
+    "BTN1": 14,
+    "BTN2": 15,
+    "BTN3": 18,
+    "BTN4": 8
+}
 
-# Configuración botones con pull-up
-for b in botones:
-    GPIO.setup(b, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# ===== BUZZER =====
+buzzer = 13
 
-# LED y buzzer
-GPIO.setup(led, GPIO.OUT)
+buzzer_gnd = 21
+GPIO.setup(buzzer_gnd, GPIO.OUT)
+GPIO.output(buzzer_gnd, GPIO.LOW)
+
+
+# --- CONFIG ---
+for gnd in gnd_pines:
+    GPIO.setup(gnd, GPIO.OUT)
+    GPIO.output(gnd, GPIO.LOW)
+
+for pin in botones.values():
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+for pin in leds.values():
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, GPIO.LOW)
+
 GPIO.setup(buzzer, GPIO.OUT)
+GPIO.output(buzzer, GPIO.LOW)
 
-print("Sistema listo. Se mostrarán estímulos cada pocos segundos.")
+print("Sistema listo. Juego iniciado.")
 
-
-def esperar_pulsacion():
-    """Devuelve qué botón se pulsa."""
+# ===================
+# ESPERAR PULSACIÓN
+# ===================
+def esperar_boton():
     while True:
-        for b in botones:
-            if GPIO.input(b) == GPIO.LOW:
-                return b
+        for nombre, pin in botones.items():
+            if GPIO.input(pin) == GPIO.LOW:
+                return nombre
         time.sleep(0.001)
 
-
+# ===================
+# BUCLE PRINCIPAL
+# ===================
 try:
     while True:
 
-        # Espera aleatoria antes del estímulo
-        tiempo_aleatorio = random.uniform(2, 5)
-        time.sleep(tiempo_aleatorio)
+        # Elegir LED / botón objetivo
+        objetivo = random.choice(list(leds.keys()))
 
-        # Estímulo
-        GPIO.output(led, True)
+        # Mostrar estímulo
+        GPIO.output(leds[objetivo], True)
         GPIO.output(buzzer, True)
         time.sleep(0.15)
         GPIO.output(buzzer, False)
 
         inicio = time.time()
 
-        # Esperar a que el usuario pulse un botón
-        boton_pulsado = esperar_pulsacion()
+        # Esperar respuesta
+        pulsado = esperar_boton()
         fin = time.time()
 
         # Apagar LED
-        GPIO.output(led, False)
+        GPIO.output(leds[objetivo], False)
 
-        # Calcular tiempo de reacción
-        reaccion_ms = (fin - inicio) * 1000
+        # Calcular tiempo
+        reaccion = (fin - inicio) * 1000
 
-        print(f"Tiempo de reacción: {reaccion_ms:.2f} ms (botón GPIO {boton_pulsado})")
+        if pulsado == objetivo:
+            print(f"✔ Correcto: {objetivo} en {reaccion:.2f} ms")
+            GPIO.output(leds[objetivo], True)
+            time.sleep(0.3)
+            GPIO.output(leds[objetivo], False)
+        else:
+            print(f"✘ Incorrecto: pulsaste {pulsado}, era {objetivo}")
+            GPIO.output(buzzer, True)
+            time.sleep(0.4)
+            GPIO.output(buzzer, False)
 
         time.sleep(1)
 
 except KeyboardInterrupt:
-    print("\nPrograma detenido.")
+    print("\nJuego detenido")
 
 finally:
     GPIO.cleanup()
