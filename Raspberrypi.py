@@ -26,13 +26,14 @@ leds = {
 
 # ===== BUZZER =====
 buzzer = 13
-
 buzzer_gnd = 21
+
 GPIO.setup(buzzer_gnd, GPIO.OUT)
 GPIO.output(buzzer_gnd, GPIO.LOW)
 
-
-# --- CONFIG ---
+# =============================
+# CONFIGURACIÓN DE PINES
+# =============================
 for gnd in gnd_pines:
     GPIO.setup(gnd, GPIO.OUT)
     GPIO.output(gnd, GPIO.LOW)
@@ -47,11 +48,25 @@ for pin in leds.values():
 GPIO.setup(buzzer, GPIO.OUT)
 GPIO.output(buzzer, GPIO.LOW)
 
-print("Sistema listo. Juego iniciado.")
+print("Sistema listo.")
+print("➡ Pulsa cualquier botón para comenzar el test.")
 
-# ===================
-# ESPERAR PULSACIÓN
-# ===================
+# =============================
+# ESPERAR A QUE EL USUARIO EMPIECE
+# =============================
+def esperar_boton_inicial():
+    while True:
+        for pin in botones.values():
+            if GPIO.input(pin) == GPIO.LOW:
+                return
+        time.sleep(0.01)
+
+esperar_boton_inicial()
+print("Test iniciado.")
+
+# =============================
+# FUNCIÓN GENERAL PARA ESPERAR PULSACIÓN
+# =============================
 def esperar_boton():
     while True:
         for nombre, pin in botones.items():
@@ -59,31 +74,39 @@ def esperar_boton():
                 return nombre
         time.sleep(0.001)
 
-# ===================
-# BUCLE PRINCIPAL
-# ===================
+# =============================
+# BUCLE PRINCIPAL DEL TEST
+# =============================
 try:
     while True:
 
-        # Elegir LED / botón objetivo
+        # --- ESPERA ALEATORIA ---
+        espera = random.uniform(2, 5)
+        print(f"\nPreparado... esperando {espera:.2f} segundos")
+        time.sleep(espera)
+
+        # --- ELEGIR EL LED OBJETIVO ---
         objetivo = random.choice(list(leds.keys()))
 
-        # Mostrar estímulo
+        # --- ESTÍMULO ---
+        print(f"¡PULSA AHORA! ({objetivo})")
         GPIO.output(leds[objetivo], True)
+
+        # Pitido
         GPIO.output(buzzer, True)
         time.sleep(0.15)
         GPIO.output(buzzer, False)
 
         inicio = time.time()
 
-        # Esperar respuesta
+        # --- REACCIÓN ---
         pulsado = esperar_boton()
         fin = time.time()
 
-        # Apagar LED
+        # --- APAGAR LED ---
         GPIO.output(leds[objetivo], False)
 
-        # Calcular tiempo
+        # --- CÁLCULO DEL TIEMPO ---
         reaccion = (fin - inicio) * 1000
 
         if pulsado == objetivo:
@@ -100,7 +123,7 @@ try:
         time.sleep(1)
 
 except KeyboardInterrupt:
-    print("\nJuego detenido")
+    print("\nTest detenido por el usuario.")
 
 finally:
     GPIO.cleanup()
