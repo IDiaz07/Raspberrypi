@@ -3,15 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Juego de Reacción</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Juego de Reacción</h1>
 
-    <p>Último resultado: <b>{{resultado}}</b></p>
-    <p>Tiempo de reacción: <b>{{tiempo}} ms</b></p>
+<div class="card">
+    <h1>🎮 Juego de Reacción</h1>
 
-    <p>Para jugar, usa los botones físicos de la Raspberry Pi.</p>
+    <p><b>Estado:</b> {{ estado }}</p>
 
-    <a href="/resultados">Ver detalles</a>
+    <div class="botones">
+        <a class="btn verde" href="/start">▶ Iniciar</a>
+        <a class="btn rojo" href="/stop">■ Detener</a>
+    </div>
+
+    <a class="btn amarillo" href="/resultados">📊 Ver resultados</a>
+</div>
+
 </body>
 </html>
+    

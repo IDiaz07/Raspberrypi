@@ -2,14 +2,30 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Resultados del Juego</title>
+    <title>Resultados</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Resultados del Juego</h1>
 
-    <p>Tiempo de la última jugada: <b>{{tiempo}} ms</b></p>
-    <p>Resultado: <b>{{resultado}}</b></p>
+<div class="card">
+    <h1>📊 Historial de Partidas</h1>
 
-    <a href="/">Volver al inicio</a>
+    <table>
+        <tr>
+            <th>Fecha</th>
+            <th>Media (ms)</th>
+        </tr>
+
+        {% for fila in datos %}
+        <tr>
+            <td>{{ fila[0] }}</td>
+            <td>{{ fila[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a class="btn amarillo" href="/">⬅ Volver</a>
+</div>
+
 </body>
 </html>
