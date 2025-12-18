@@ -12,6 +12,21 @@ DB_PATH = "/home/pi/raspBerryBase.db"
 proceso = None
 
 
+def obtener_ultima_partida():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT fecha, media FROM tiempos ORDER BY id DESC LIMIT 1"
+    )
+    fila = cursor.fetchone()
+    conn.close()
+
+    if fila:
+        return fila[0], round(fila[1], 2)
+    return "--", "--"
+
+
 @app.route("/")
 def index():
     global proceso
@@ -20,10 +35,13 @@ def index():
         proceso = None
 
     estado = "En ejecución" if proceso else "Parado"
+    fecha, media = obtener_ultima_partida()
 
     return render_template(
         "index.html",
-        estado=estado
+        estado=estado,
+        fecha=fecha,
+        media=media
     )
 
 
@@ -51,8 +69,10 @@ def stop():
 def resultados():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+
     cursor.execute("SELECT fecha, media FROM tiempos ORDER BY id DESC")
     datos = cursor.fetchall()
+
     conn.close()
 
     return render_template("resultados.html", datos=datos)
